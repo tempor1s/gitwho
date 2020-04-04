@@ -11,11 +11,13 @@ import (
 
 func init() {
 	rootCmd.AddCommand(orgCommand)
+
+	orgCommand.Flags().BoolVarP(&Users, "users", "u", false, "Use this flag if you would like to gather all users information for the org. Note: This might take awhile!")
 }
 
 var (
 	// Flags
-	// TODO: User flag to get all user info from an org ;)
+	Users bool
 
 	// Cmd
 	orgCommand = &cobra.Command{
@@ -78,7 +80,7 @@ func generateOrgStruct(o *github.Organization, orgMembers []*github.User) github
 	org.Following = o.GetFollowing()
 
 	if len(orgMembers) == 100 {
-		org.PublicMembers = fmt.Sprintf("%d+ (use --users to get full count - may take awhile)", len(orgMembers))
+		org.PublicMembers = fmt.Sprintf("%d+ (use --users to get total count - may take awhile)", len(orgMembers))
 	} else {
 		org.PublicMembers = fmt.Sprintf("%d", len(orgMembers))
 	}
@@ -136,7 +138,7 @@ func getOrgMembers(orgName string) []*github.User {
 	}
 
 	// If we have less than 100 users, just return what we have - otherwise move on to pagination requests..
-	if len(orgMembers) < 100 {
+	if len(orgMembers) < 100 || Users == false {
 		return orgMembers
 	}
 

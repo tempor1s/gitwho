@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/google/go-github/v30/github"
@@ -35,31 +36,80 @@ func usernameCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// fmt.Printf("- User: %v\n", githubUser)
-	fmt.Println("General Info")
-	fmt.Printf("- Real Name: %s\n", githubUser.GetName())
-	fmt.Printf("- Username: %s\n", githubUser.GetLogin())
-	fmt.Printf("- Bio: %s\n", githubUser.GetBio())
-	fmt.Printf("- Location: %s\n", githubUser.GetLocation())
-	fmt.Printf("- Website: %s\n", githubUser.GetBlog())
-	fmt.Printf("- Link: %s\n", githubUser.GetHTMLURL())
+	// Gitub user
+	userinfo := generateUserStruct(githubUser)
 
-	fmt.Println("Work Info")
-	fmt.Printf("- Hireable: %t\n", githubUser.GetHireable())
-	fmt.Printf("- Organization: %s\n", githubUser.GetCompany())
-	fmt.Println("By the numbers")
-	fmt.Printf("- Public Repos: %d\n", githubUser.GetPublicRepos())
-	fmt.Printf("- Public Gists: %d\n", githubUser.GetPublicGists())
-	fmt.Println("Community")
-	fmt.Printf("- Followers: %d\n", githubUser.GetFollowers())
-	fmt.Printf("- Following: %d\n", githubUser.GetFollowing())
-
-	fmt.Println("Dates")
-	fmt.Printf("- Last Active: %s\n", humanize.Time(githubUser.UpdatedAt.Time))
-	year, month, day := githubUser.CreatedAt.Date()
-	fmt.Printf("- Account Created: %d/%d/%d\n", month, day, year)
+	// Print info.
+	printUserInfo(userinfo)
 }
 
+type githubUser struct {
+	Name           string
+	Username       string
+	Bio            string
+	Location       string
+	Website        string
+	GithubUrl      string
+	Hireable       bool
+	Org            string
+	Repos          int
+	Gists          int
+	Followers      int
+	Following      int
+	LastActive     time.Time
+	AccountCreated time.Time
+}
+
+// generateuserStruct cleans the response from github and turns it into a nice struct for us to use
+func generateUserStruct(gu *github.User) githubUser {
+	user := githubUser{}
+
+	user.Name = gu.GetName()
+	user.Username = gu.GetLogin()
+	user.Bio = gu.GetBio()
+	user.Location = gu.GetLocation()
+	user.Website = gu.GetBlog()
+	user.GithubUrl = gu.GetHTMLURL()
+	user.Hireable = gu.GetHireable()
+	user.Org = gu.GetCompany()
+	user.Repos = gu.GetPublicRepos()
+	user.Gists = gu.GetPublicGists()
+	user.Followers = gu.GetFollowers()
+	user.Following = gu.GetFollowing()
+	user.LastActive = gu.GetUpdatedAt().Time
+	user.AccountCreated = gu.GetCreatedAt().Time
+
+	return user
+}
+
+// printUserInfo will print out our nicely formatted struct :)
+func printUserInfo(u githubUser) {
+	fmt.Println("General Info")
+	fmt.Printf("- Real Name: %s\n", u.Name)
+	fmt.Printf("- Username: %s\n", u.Username)
+	fmt.Printf("- Bio: %s\n", u.Bio)
+	fmt.Printf("- Location: %s\n", u.Location)
+	fmt.Printf("- Website: %s\n", u.Website)
+	fmt.Printf("- Link: %s\n", u.GithubUrl)
+
+	fmt.Println("Work Info")
+	fmt.Printf("- Hireable: %t\n", u.Hireable)
+	fmt.Printf("- Organization: %s\n", u.Org)
+	fmt.Println("By the numbers")
+	fmt.Printf("- Public Repos: %d\n", u.Repos)
+	fmt.Printf("- Public Gists: %d\n", u.Gists)
+	fmt.Println("Community")
+	fmt.Printf("- Followers: %d\n", u.Followers)
+	fmt.Printf("- Following: %d\n", u.Following)
+
+	fmt.Println("Dates")
+	year, month, day := u.LastActive.Date()
+	fmt.Printf("- Last Active: %s (%d/%d/%d)\n", humanize.Time(u.LastActive), month, day, year)
+	year, month, day = u.AccountCreated.Date()
+	fmt.Printf("- Account Created: %s (%d/%d/%d)\n", humanize.Time(u.AccountCreated), month, day, year)
+}
+
+// getUserByUsername gets user info from the github API
 func getUserByUsername(username string) *github.User {
 	client := github.NewClient(nil)
 

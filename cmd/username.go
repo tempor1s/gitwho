@@ -2,7 +2,11 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"os/exec"
 	"time"
 
@@ -17,11 +21,13 @@ func init() {
 	rootCmd.AddCommand(usernameCommand)
 	// setup local flags
 	usernameCommand.Flags().BoolVarP(&Open, "open", "o", false, "Open their GitHub repo after printing info.")
+	usernameCommand.Flags().BoolVarP(&Json, "json", "j", false, "Print output in JSON and create a <username>.json file in your current directory.")
 }
 
 var (
 	// local flags
 	Open bool
+	Json bool
 	// local cmd
 	usernameCommand = &cobra.Command{
 		Use:   "username",
@@ -50,8 +56,13 @@ func usernameCmd(cmd *cobra.Command, args []string) {
 	userinfo := generateUserStruct(githubUser)
 
 	// Print info.
-	printUserInfo(userinfo)
+	if Json {
+		printJsonUserInfo(userinfo)
+	} else {
+		printUserInfo(userinfo)
+	}
 
+	// Open the github url for them if they want.
 	if Open {
 		err := exec.Command("open", userinfo.GithubUrl).Start()
 
@@ -63,20 +74,20 @@ func usernameCmd(cmd *cobra.Command, args []string) {
 }
 
 type githubUser struct {
-	Name           string
-	Username       string
-	Bio            string
-	Location       string
-	Website        string
-	GithubUrl      string
-	Hireable       bool
-	Org            string
-	Repos          int
-	Gists          int
-	Followers      int
-	Following      int
-	LastActive     time.Time
-	AccountCreated time.Time
+	Name           string    `json:"name"`
+	Username       string    `json:"username"`
+	Bio            string    `json:"bio"`
+	Location       string    `json:"location"`
+	Website        string    `json:"website"`
+	GithubUrl      string    `json:"github_url"`
+	Hireable       bool      `json:"hireable"`
+	Org            string    `json:"org"`
+	Repos          int       `json:"repos"`
+	Gists          int       `json:"gists"`
+	Followers      int       `json:"followers"`
+	Following      int       `json:"following"`
+	LastActive     time.Time `json:"last_active"`
+	AccountCreated time.Time `json:"account_created"`
 }
 
 // generateuserStruct cleans the response from github and turns it into a nice struct for us to use
@@ -99,6 +110,19 @@ func generateUserStruct(gu *github.User) githubUser {
 	user.AccountCreated = gu.GetCreatedAt().Time
 
 	return user
+}
+
+// printJsonUserInfo will print the users info in json format :)
+func printJsonUserInfo(userinfo githubUser) {
+	json, err := json.MarshalIndent(&userinfo, "", "    ")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ioutil.WriteFile(fmt.Sprintf("%s.json", userinfo.Username), json, os.ModePerm)
+
+	fmt.Printf("%s\n", string(json))
 }
 
 // printUserInfo will print out our nicely formatted struct :)

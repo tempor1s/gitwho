@@ -35,32 +35,34 @@ func orgCmd(cmd *cobra.Command, args []string) {
 	orgName := args[0]
 
 	orgInfo := getOrgByName(orgName)
+	orgMembers := getOrgMembers(orgName)
 
 	if orgInfo == nil {
 		fmt.Println("Error: Could not find Github Organization.")
 		return
 	}
 
-	orgStruct := generateOrgStruct(orgInfo)
+	orgStruct := generateOrgStruct(orgInfo, orgMembers)
 
 	printOrgInfo(orgStruct)
 }
 
 type githubOrg struct {
-	Name        string
-	Username    string
-	Description string
-	Location    string
-	Website     string
-	GithubUrl   string
-	Email       string
-	Repos       int
-	Gists       int
-	Followers   int
-	Following   int
+	Name          string
+	Username      string
+	Description   string
+	Location      string
+	Website       string
+	GithubUrl     string
+	Email         string
+	Repos         int
+	Gists         int
+	Followers     int
+	Following     int
+	PublicMembers string
 }
 
-func generateOrgStruct(o *github.Organization) githubOrg {
+func generateOrgStruct(o *github.Organization, orgMembers []*github.User) githubOrg {
 	org := githubOrg{}
 
 	org.Name = o.GetName()
@@ -75,26 +77,33 @@ func generateOrgStruct(o *github.Organization) githubOrg {
 	org.Followers = o.GetFollowers()
 	org.Following = o.GetFollowing()
 
+	if len(orgMembers) == 100 {
+		org.PublicMembers = fmt.Sprintf("%d+ (use --users to get full count - may take awhile)", len(orgMembers))
+	} else {
+		org.PublicMembers = fmt.Sprintf("%d", len(orgMembers))
+	}
+
 	return org
 }
 
 func printOrgInfo(o githubOrg) {
 	fmt.Println(aurora.Bold("GitWho -- Simple GitHub information."))
 	fmt.Println(aurora.Underline(aurora.Bold("General Info")))
-	fmt.Println(aurora.Bold(aurora.Blue("- Org Name: ")), aurora.Bold(o.Name))
-	fmt.Println(aurora.Bold(aurora.Blue("- Username: ")), aurora.Bold(o.Username))
-	fmt.Println(aurora.Bold(aurora.Blue("- Description: ")), aurora.Bold(o.Description))
-	fmt.Println(aurora.Bold(aurora.Blue("- Location: ")), aurora.Bold(o.Location))
-	fmt.Println(aurora.Bold(aurora.Blue("- Website: ")), aurora.Bold(aurora.Underline(o.Website)))
-	fmt.Println(aurora.Bold(aurora.Blue("- Link: ")), aurora.Bold(aurora.Underline(o.GithubUrl)))
+	fmt.Println(aurora.Bold(aurora.Blue("- Org Name:")), aurora.Bold(o.Name))
+	fmt.Println(aurora.Bold(aurora.Blue("- Username:")), aurora.Bold(o.Username))
+	fmt.Println(aurora.Bold(aurora.Blue("- Description:")), aurora.Bold(o.Description))
+	fmt.Println(aurora.Bold(aurora.Blue("- Location:")), aurora.Bold(o.Location))
+	fmt.Println(aurora.Bold(aurora.Blue("- Website:")), aurora.Bold(aurora.Underline(o.Website)))
+	fmt.Println(aurora.Bold(aurora.Blue("- Link:")), aurora.Bold(aurora.Underline(o.GithubUrl)))
 
 	fmt.Println(aurora.Underline(aurora.Bold("By the numbers")))
-	fmt.Println(aurora.Bold(aurora.Cyan("- Public Repos: ")), aurora.Bold(o.Repos))
-	fmt.Println(aurora.Bold(aurora.Cyan("- Public Gists: ")), aurora.Bold(o.Gists))
+	fmt.Println(aurora.Bold(aurora.Cyan("- Public Repos:")), aurora.Bold(o.Repos))
+	fmt.Println(aurora.Bold(aurora.Cyan("- Public Gists:")), aurora.Bold(o.Gists))
 
 	fmt.Println(aurora.Underline(aurora.Bold("Community")))
-	fmt.Println(aurora.Bold(aurora.Green("- Followers: ")), aurora.Bold(o.Followers))
-	fmt.Println(aurora.Bold(aurora.Green("- Following: ")), aurora.Bold(o.Following))
+	fmt.Println(aurora.Bold(aurora.Green("- Public Members:")), aurora.Bold(o.PublicMembers))
+	fmt.Println(aurora.Bold(aurora.Green("- Followers:")), aurora.Bold(o.Followers))
+	fmt.Println(aurora.Bold(aurora.Green("- Following:")), aurora.Bold(o.Following))
 }
 
 func getOrgByName(orgName string) *github.Organization {
@@ -107,4 +116,57 @@ func getOrgByName(orgName string) *github.Organization {
 	}
 
 	return githubOrg
+}
+
+func getOrgMembers(orgName string) []*github.User {
+	client := github.NewClient(nil)
+
+	opt := &github.ListMembersOptions{
+		PublicOnly: true,
+		ListOptions: github.ListOptions{
+			Page:    1,
+			PerPage: 100,
+		}}
+
+	// Get total org members
+	orgMembers, resp, err := client.Organizations.ListMembers(context.Background(), orgName, opt)
+
+	if err != nil {
+		return nil
+	}
+
+	// If we have less than 100 users, just return what we have - otherwise move on to pagination requests..
+	if len(orgMembers) < 100 {
+		return orgMembers
+	}
+
+	// Create a new temp variable to hold all the users in
+	ret := []*github.User{}
+
+	// add all the users we got to the return variable
+	for _, member := range orgMembers {
+		ret = append(ret, member)
+	}
+
+	// Run through every page, gathering all the members and adding them to the return value
+	for i := 2; i < resp.LastPage+1; i++ {
+		opt := &github.ListMembersOptions{
+			PublicOnly: true,
+			ListOptions: github.ListOptions{
+				Page:    i,
+				PerPage: 100,
+			}}
+
+		orgMembers, _, err := client.Organizations.ListMembers(context.Background(), orgName, opt)
+
+		if err != nil {
+			return nil
+		}
+
+		for _, member := range orgMembers {
+			ret = append(ret, member)
+		}
+	}
+
+	return ret
 }

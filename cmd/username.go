@@ -7,6 +7,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/google/go-github/v30/github"
+	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
@@ -84,29 +85,32 @@ func generateUserStruct(gu *github.User) githubUser {
 
 // printUserInfo will print out our nicely formatted struct :)
 func printUserInfo(u githubUser) {
-	fmt.Println("General Info")
-	fmt.Printf("- Real Name: %s\n", u.Name)
-	fmt.Printf("- Username: %s\n", u.Username)
-	fmt.Printf("- Bio: %s\n", u.Bio)
-	fmt.Printf("- Location: %s\n", u.Location)
-	fmt.Printf("- Website: %s\n", u.Website)
-	fmt.Printf("- Link: %s\n", u.GithubUrl)
+	fmt.Println(aurora.Bold("GitWho -- Simple GitHub information."))
+	fmt.Println(aurora.Underline(aurora.Bold("General Info")))
+	fmt.Println(aurora.Bold(aurora.Blue("- Real Name: ")), aurora.Bold(u.Name))
+	fmt.Println(aurora.Bold(aurora.Blue("- Username: ")), aurora.Bold(u.Username))
+	fmt.Println(aurora.Bold(aurora.Blue("- Bio: ")), aurora.Bold(u.Bio))
+	fmt.Println(aurora.Bold(aurora.Blue("- Location: ")), aurora.Bold(u.Location))
+	fmt.Println(aurora.Bold(aurora.Blue("- Website: ")), aurora.Bold(aurora.Underline(u.Website)))
+	fmt.Println(aurora.Bold(aurora.Blue("- Link: ")), aurora.Bold(aurora.Underline(u.GithubUrl)))
 
-	fmt.Println("Work Info")
-	fmt.Printf("- Hireable: %t\n", u.Hireable)
-	fmt.Printf("- Organization: %s\n", u.Org)
-	fmt.Println("By the numbers")
-	fmt.Printf("- Public Repos: %d\n", u.Repos)
-	fmt.Printf("- Public Gists: %d\n", u.Gists)
-	fmt.Println("Community")
-	fmt.Printf("- Followers: %d\n", u.Followers)
-	fmt.Printf("- Following: %d\n", u.Following)
+	fmt.Println(aurora.Underline(aurora.Bold("Work Info")))
+	fmt.Println(aurora.Bold(aurora.Magenta("- Hireable")), aurora.Bold(u.Hireable))
+	fmt.Println(aurora.Bold(aurora.Magenta("- Organization: ")), aurora.Bold(u.Org))
 
-	fmt.Println("Dates")
+	fmt.Println(aurora.Underline(aurora.Bold("By the numbers")))
+	fmt.Println(aurora.Bold(aurora.Cyan("- Public Repos: ")), aurora.Bold(u.Repos))
+	fmt.Println(aurora.Bold(aurora.Cyan("- Public Gists: ")), aurora.Bold(u.Gists))
+
+	fmt.Println(aurora.Underline(aurora.Bold("Community")))
+	fmt.Println(aurora.Bold(aurora.Green("- Followers: ")), aurora.Bold(u.Followers))
+	fmt.Println(aurora.Bold(aurora.Green("- Following: ")), aurora.Bold(u.Following))
+
+	fmt.Println(aurora.Underline(aurora.Bold("Dates")))
 	year, month, day := u.LastActive.Date()
-	fmt.Printf("- Last Active: %s (%d/%d/%d)\n", humanize.Time(u.LastActive), month, day, year)
+	fmt.Println(aurora.Bold(aurora.Yellow("- Last Active: ")), aurora.Bold(fmt.Sprintf("%s (%d/%d/%d)", humanize.Time(u.LastActive), month, day, year)))
 	year, month, day = u.AccountCreated.Date()
-	fmt.Printf("- Account Created: %s (%d/%d/%d)\n", humanize.Time(u.AccountCreated), month, day, year)
+	fmt.Println(aurora.Bold(aurora.Yellow("- Account Created: ")), aurora.Bold(fmt.Sprintf("%s (%d/%d/%d)", humanize.Time(u.AccountCreated), month, day, year)))
 }
 
 // getUserByUsername gets user info from the github API

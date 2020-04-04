@@ -53,21 +53,21 @@ func usernameCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// Gitub user
-	userinfo := generateUserStruct(githubUser)
+	userInfo := generateUserStruct(githubUser)
 
 	// Print info.
 	if Json {
-		printJsonUserInfo(userinfo)
+		printJsonUserInfo(userInfo)
 	} else {
-		printUserInfo(userinfo)
+		printUserInfo(userInfo)
 	}
 
 	// Open the github url for them if they want.
 	if Open {
-		err := exec.Command("open", userinfo.GithubUrl).Start()
+		err := exec.Command("open", userInfo.GithubUrl).Start()
 
 		if err != nil {
-			fmt.Println(aurora.Bold(aurora.Red("Error: Could not open Github URL: ")), userinfo.GithubUrl)
+			fmt.Println(aurora.Bold(aurora.Red("Error: Could not open Github URL: ")), userInfo.GithubUrl)
 			return
 		}
 	}

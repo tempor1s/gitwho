@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os/exec"
 	"time"
 
 	"github.com/dustin/go-humanize"
@@ -12,15 +13,23 @@ import (
 )
 
 func init() {
+	// register the command
 	rootCmd.AddCommand(usernameCommand)
+	// setup local flags
+	usernameCommand.Flags().BoolVarP(&Open, "open", "o", false, "Open their GitHub repo after printing info.")
 }
 
-var usernameCommand = &cobra.Command{
-	Use:   "username",
-	Short: "Get information about a specific Github user. ",
-	Long:  "Allows you to get information about a specific GitHub user just from their github username. Example: `gitwho username tempor1s`",
-	Run:   usernameCmd,
-}
+var (
+	// local flags
+	Open bool
+	// local cmd
+	usernameCommand = &cobra.Command{
+		Use:   "username",
+		Short: "Get information about a specific Github user. ",
+		Long:  "Allows you to get information about a specific GitHub user just from their github username. Example: `gitwho username tempor1s`",
+		Run:   usernameCmd,
+	}
+)
 
 func usernameCmd(cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
@@ -42,6 +51,15 @@ func usernameCmd(cmd *cobra.Command, args []string) {
 
 	// Print info.
 	printUserInfo(userinfo)
+
+	if Open {
+		err := exec.Command("open", userinfo.GithubUrl).Start()
+
+		if err != nil {
+			fmt.Println(aurora.Bold(aurora.Red("Error: Could not open Github URL: ")), userinfo.GithubUrl)
+			return
+		}
+	}
 }
 
 type githubUser struct {

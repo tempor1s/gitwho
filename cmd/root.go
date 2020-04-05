@@ -36,8 +36,8 @@ JSON Dump of all commands`,
 
 func Execute() {
 	// Global Flags
-	rootCmd.PersistentFlags().BoolVarP(&Json, "json", "j", false, "Use this flag to dump the response to JSON output and a JSON file.")
-	rootCmd.PersistentFlags().StringVarP(&Token, "token", "t", "", "Supply a Personal Access Tokent to up the api request limit and access private information.")
+	rootCmd.PersistentFlags().BoolVarP(&Json, "json", "j", false, "Dump any commands output to JSON on the CLI and to create a JSON file.")
+	rootCmd.PersistentFlags().StringVarP(&Token, "token", "t", "", "Supply a Personal Access Token to up the api request limit and access private information.")
 
 	// Execute a command
 	if err := rootCmd.Execute(); err != nil {

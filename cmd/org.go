@@ -179,6 +179,8 @@ func getOrgMembers(orgName string) []*github.User {
 		return orgMembers
 	}
 
+	fmt.Println("Warning: Scraping more than 100 org members. This could take awhile...")
+
 	// Create a new temp variable to hold all the users in
 	ret := []*github.User{}
 

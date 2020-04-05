@@ -46,7 +46,7 @@ func userCmd(cmd *cobra.Command, args []string) {
 	githubUser := getUserByUsername(username)
 
 	if githubUser == nil {
-		fmt.Println("Error: User not found.")
+		fmt.Println("Error: User not found or you are rate-limited.")
 		return
 	}
 

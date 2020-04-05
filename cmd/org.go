@@ -44,7 +44,7 @@ func orgCmd(cmd *cobra.Command, args []string) {
 	orgMembers := getOrgMembers(orgName)
 
 	if orgInfo == nil {
-		fmt.Println("Error: Could not find Github Organization.")
+		fmt.Println("Error: Could not find Github Organization or you are rate limited.")
 		return
 	}
 

@@ -64,4 +64,4 @@ brews:
           name: homebrew-gitwho
       folder: Formula
       homepage: https://github.com/tempor1s/gitwho
-      description: A simple CLI tool to quickly get information about a GitHub user.  
+      description: A simple CLI tool to get in depth Github Information about Users and Orgs!

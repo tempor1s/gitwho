@@ -21,13 +21,11 @@ func init() {
 	rootCmd.AddCommand(userCommand)
 	// setup local flags
 	userCommand.Flags().BoolVarP(&Open, "open", "o", false, "Open their GitHub repo after printing info.")
-	userCommand.Flags().BoolVarP(&Json, "json", "j", false, "Print output in JSON and create a <username>.json file in your current directory.")
 }
 
 var (
 	// local flags
 	Open bool
-	Json bool
 	// local cmd
 	userCommand = &cobra.Command{
 		Use:   "user",
@@ -112,7 +110,7 @@ func generateUserStruct(gu *github.User) githubUser {
 	return user
 }
 
-// printJsonUserInfo will print the users info in json format :)
+// printUserJsonUserInfo will print the users info in json format :)
 func printJsonUserInfo(userinfo githubUser) {
 	json, err := json.MarshalIndent(&userinfo, "", "    ")
 

@@ -2,7 +2,11 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 
 	"github.com/google/go-github/v30/github"
 	"github.com/logrusorgru/aurora"
@@ -46,7 +50,11 @@ func orgCmd(cmd *cobra.Command, args []string) {
 
 	orgStruct := generateOrgStruct(orgInfo, orgMembers)
 
-	printOrgInfo(orgStruct)
+	if Json {
+		printJsonOrgInfo(orgStruct)
+	} else {
+		printOrgInfo(orgStruct)
+	}
 }
 
 type githubOrg struct {
@@ -96,9 +104,19 @@ func generateOrgStruct(o *github.Organization, orgMembers []*github.User) github
 		org.PublicMembers = publicMembers
 	}
 
-	fmt.Println(org.PublicMembers)
-
 	return org
+}
+
+func printJsonOrgInfo(o githubOrg) {
+	json, err := json.MarshalIndent(&o, "", "    ")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ioutil.WriteFile(fmt.Sprintf("%s.json", o.Username), json, os.ModePerm)
+
+	fmt.Printf("%s\n", string(json))
 }
 
 func printOrgInfo(o githubOrg) {

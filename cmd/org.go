@@ -50,18 +50,19 @@ func orgCmd(cmd *cobra.Command, args []string) {
 }
 
 type githubOrg struct {
-	Name          string
-	Username      string
-	Description   string
-	Location      string
-	Website       string
-	GithubUrl     string
-	Email         string
-	Repos         int
-	Gists         int
-	Followers     int
-	Following     int
-	PublicMembers string
+	Name              string
+	Username          string
+	Description       string
+	Location          string
+	Website           string
+	GithubUrl         string
+	Email             string
+	Repos             int
+	Gists             int
+	Followers         int
+	Following         int
+	PublicMemberCount int
+	PublicMembers     []githubUser
 }
 
 func generateOrgStruct(o *github.Organization, orgMembers []*github.User) githubOrg {
@@ -78,12 +79,24 @@ func generateOrgStruct(o *github.Organization, orgMembers []*github.User) github
 	org.Gists = o.GetPublicGists()
 	org.Followers = o.GetFollowers()
 	org.Following = o.GetFollowing()
+	org.PublicMemberCount = len(orgMembers)
 
-	if len(orgMembers) == 100 {
-		org.PublicMembers = fmt.Sprintf("%d+ (use --users to get total count - may take awhile)", len(orgMembers))
-	} else {
-		org.PublicMembers = fmt.Sprintf("%d", len(orgMembers))
+	publicMembers := []githubUser{}
+
+	// Convert all *githubUser to our custom struct - this could take awhile..
+	if Users {
+		for _, member := range orgMembers {
+			fmt.Printf("%+v\n", member)
+
+			githubUser := getUserByUsername(member.GetLogin())
+			usr := generateUserStruct(githubUser)
+			publicMembers = append(publicMembers, usr)
+		}
+
+		org.PublicMembers = publicMembers
 	}
+
+	fmt.Println(org.PublicMembers)
 
 	return org
 }
@@ -103,7 +116,13 @@ func printOrgInfo(o githubOrg) {
 	fmt.Println(aurora.Bold(aurora.Cyan("- Public Gists:")), aurora.Bold(o.Gists))
 
 	fmt.Println(aurora.Underline(aurora.Bold("Community")))
-	fmt.Println(aurora.Bold(aurora.Green("- Public Members:")), aurora.Bold(o.PublicMembers))
+	msg := ""
+	if o.PublicMemberCount == 100 {
+		msg = fmt.Sprintf("%d+ (use --users to get total count - may take awhile)", o.PublicMemberCount)
+	} else {
+		msg = fmt.Sprintf("%d", o.PublicMemberCount)
+	}
+	fmt.Println(aurora.Bold(aurora.Green("- Public Members:")), aurora.Bold(msg))
 	fmt.Println(aurora.Bold(aurora.Green("- Followers:")), aurora.Bold(o.Followers))
 	fmt.Println(aurora.Bold(aurora.Green("- Following:")), aurora.Bold(o.Following))
 }

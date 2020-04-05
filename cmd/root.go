@@ -12,7 +12,9 @@ import (
 
 var (
 	// Flags
-	Json  bool
+	// Json specifies if you would like to dump the command response to JSON.
+	Json bool
+	// Token is your github personal access token, that will raise your rate limit so you can scrape more data!
 	Token string
 
 	// Root Command
@@ -34,6 +36,7 @@ JSON Dump of all commands`,
 	}
 )
 
+// Execute will execute the command.
 func Execute() {
 	// Global Flags
 	rootCmd.PersistentFlags().BoolVarP(&Json, "json", "j", false, "Dump any commands output to JSON on the CLI and to create a JSON file.")

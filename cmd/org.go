@@ -21,6 +21,7 @@ func init() {
 
 var (
 	// Flags
+	// Users flag specifies if you want to get in-depth user data from the org.
 	Users bool
 
 	// Cmd

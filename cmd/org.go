@@ -94,8 +94,8 @@ func generateOrgStruct(o *github.Organization, orgMembers []*github.User) github
 	// Convert all *githubUser to our custom struct - this could take awhile..
 	if Users {
 		for _, member := range orgMembers {
-			fmt.Printf("%+v\n", member)
-
+			// Get every unique user - yeah this is a lot of requests
+			// TODO: Use GoRoutines
 			githubUser := getUserByUsername(member.GetLogin())
 			usr := generateUserStruct(githubUser)
 			publicMembers = append(publicMembers, usr)
@@ -146,7 +146,7 @@ func printOrgInfo(o githubOrg) {
 }
 
 func getOrgByName(orgName string) *github.Organization {
-	client := github.NewClient(nil)
+	client := createGithubClient()
 
 	githubOrg, _, err := client.Organizations.Get(context.Background(), orgName)
 
@@ -158,7 +158,7 @@ func getOrgByName(orgName string) *github.Organization {
 }
 
 func getOrgMembers(orgName string) []*github.User {
-	client := github.NewClient(nil)
+	client := createGithubClient()
 
 	opt := &github.ListMembersOptions{
 		PublicOnly: true,

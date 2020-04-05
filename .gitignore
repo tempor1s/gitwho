@@ -21,3 +21,6 @@ main
 
 # go releaser
 /dist
+
+# env vars
+.env

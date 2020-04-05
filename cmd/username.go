@@ -155,7 +155,7 @@ func printUserInfo(u githubUser) {
 
 // getUserByUsername gets user info from the github API
 func getUserByUsername(username string) *github.User {
-	client := github.NewClient(nil)
+	client := createGithubClient()
 
 	githubUser, _, err := client.Users.Get(context.Background(), username)
 

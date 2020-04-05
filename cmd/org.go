@@ -58,19 +58,19 @@ func orgCmd(cmd *cobra.Command, args []string) {
 }
 
 type githubOrg struct {
-	Name              string
-	Username          string
-	Description       string
-	Location          string
-	Website           string
-	GithubUrl         string
-	Email             string
-	Repos             int
-	Gists             int
-	Followers         int
-	Following         int
-	PublicMemberCount int
-	PublicMembers     []githubUser
+	Name              string       `json:"name"`
+	Username          string       `json:"org_name"`
+	Description       string       `json:"description"`
+	Location          string       `json:"location"`
+	Website           string       `json:"website"`
+	GithubUrl         string       `json:"github_url"`
+	Email             string       `json:"email"`
+	Repos             int          `json:"repos"`
+	Gists             int          `json:"gists"`
+	Followers         int          `json:"followers"`
+	Following         int          `json:"following"`
+	PublicMemberCount int          `json:"public_member_count"`
+	PublicMembers     []githubUser `json:"org_members"`
 }
 
 func generateOrgStruct(o *github.Organization, orgMembers []*github.User) githubOrg {

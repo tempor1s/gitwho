@@ -24,7 +24,6 @@ func init() {
 }
 
 var (
-	// local flags
 	// Open specifies if you want to open the users Github profile after printing.
 	Open bool
 	// local cmd
